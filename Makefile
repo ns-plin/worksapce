@@ -1,11 +1,14 @@
-TARGETS= test_str_view test_folder_reader
+TARGETS= test_str_view test_folder_reader app_counter
 all:
 
-test_str_view: ExtractStatusCodeFuncTest.cpp utils/log.h
+test_extract_status_code: ExtractStatusCodeFuncTest.cpp utils/log.h ./utils/Counter.h
 	g++ -std=c++2a ExtractStatusCodeFuncTest.cpp -lgtest -lpthread -I. -o $@
 
 test_folder_reader: FolderReaderTest.cpp utils/FolderReader.h
 	g++ -std=c++2a FolderReaderTest.cpp -lgmock -lgtest -pthread -I. -o $@
+
+app_counter: ./utils/Counter.h CounterApp.cpp
+	g++ -std=c++2a -DBUILD_USAGE_APP ./CounterApp.cpp -I. -o $@
 
 clean:
 	rm -rf $(TARGTS) *.o

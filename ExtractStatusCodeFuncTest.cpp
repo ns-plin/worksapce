@@ -7,6 +7,8 @@ using namespace std::literals;
 
 #include <gtest/gtest.h>
 #include <utils/log.h>
+#include <./utils/FolderReader.h>
+#include <./utils/Counter.h>    
 
 std::string_view
 getHTTPStatusCode(const std::string_view &str) {
@@ -122,9 +124,36 @@ TEST(getHTTPStatusCodeTest, EmptyInput) {
   //EXPECT_EQ(getHTTPStatusCode(nullptr), ""); imposible for nullptr
 }
 
+class TestReader : public IReader {
+public:
+    Counter<std::string> counter;
+    virtual int walkReadFile(const std::string& folder_name, const std::string& filename, const std::string_view& str) {
+        std::string_view sc;
+        sc = getHTTPStatusCode(str);
+        EXPECT_NE(sc, "");
+        counter.count(std::string(sc));
+        //std::cout<<str<<std::endl;
+        return 0;
+    }
+    void output() {
+        counter.printAll();
+    }
+};
+
+TEST(getHTTPStatusCodeTest, ReadFilesInput) {
+    std::string folder = "/opt/ns/dapii/updtd-cfg/block_templates/";
+    FolderReader reader;
+    TestReader test_reader;
+    int result = reader.runFolderFileData(folder, test_reader, false, 0);
+    EXPECT_EQ(result, 0);
+    test_reader.output();
+}
+
+
 int main(int argc, char *argv[])
 {
     LOG(INFO)<<"start to test...";
     testing::InitGoogleTest(&argc, argv);
+
     return RUN_ALL_TESTS();
 }
